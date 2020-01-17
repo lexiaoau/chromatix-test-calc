@@ -1,4 +1,5 @@
 var utils = require('./utils')
+var tasks = require('./taskController')
 
 var dataObj = {};
 
@@ -64,10 +65,13 @@ exports.getDataFromFile =  function ( filePath )  {
 
     rl.on('close', function() {
         console.log('cloes');
-        // console.log('-----------------------------------------------------------------');
-        // console.log(dataObj)
+        console.log('-----------------------------------------------------------------');
+        console.log(lineObj['55'])
         const printTarget = dataObj.orderByRegionCountryItemType;
         // console.log(JSON.stringify(printTarget, null , 4));
+
+        const result = tasks.getTotalRevenueCostProfit( dataObj );
+        console.log(result)
 
         return dataObj;
 

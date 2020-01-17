@@ -158,3 +158,43 @@ exports.getYearAndMonth = function ( dateStr ) {
 
     return resultObj;
 }
+
+exports.getCountryListForRegion = function( region, dataObj) {
+    const mapping = dataObj.regionCountryMapping;
+    const countryObject = mapping[ region ];
+
+    return Object.keys( countryObject );
+}
+
+exports.getItemTypeListForCountry = function( region, country, dataObj) {
+    const mapping = dataObj.orderByRegionCountryItemType[ region ][ country ];
+
+    return Object.keys( mapping );
+}
+
+exports.getTotalRevenueCostProfitForOrderList = function( list, dataObj) {
+    const orderData = dataObj.allOrderDetail;
+
+    let totolRevenue = 0;
+    let totolCost = 0;
+    let totolProfit = 0;
+
+    for (let index = 0; index < list.length; index++) {
+        const orderId = list[index];
+
+        const thisOrderData = orderData[ orderId ];
+
+        totolRevenue += thisOrderData.totalRevenue ;
+        totolCost += thisOrderData.totalCost ;
+        totolProfit += thisOrderData.totalProfit ;        
+    }
+
+    const resultObj = {
+        totolRevenue: Math.round( totolRevenue * 100 ) / 100,
+        totolCost: Math.round( totolCost * 100 ) / 100,
+        totolProfit: Math.round( totolProfit * 100 ) / 100,
+    }
+
+    return resultObj ;
+
+}
