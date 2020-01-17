@@ -1,0 +1,16 @@
+{
+  "name": "chromatix-second-test",
+  "version": "1.0.0",
+  "description": "node-data-processing-medium-data",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Le Xiao",
+  "license": "ISC",
+  "dependencies": {
+    "inquirer": "^7.0.3"
+  }
+}
