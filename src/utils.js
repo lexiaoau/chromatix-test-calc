@@ -24,9 +24,14 @@ const TOTAL_COST_INDEX = 12;
 const TOTAL_PROFIT_INDEX = 13;
 
 exports.getDataFromLine = function(lineText) {
-    let dataObj = {};
+// console.time('getDataFromLine')    
+let dataObj = {};
 
+// console.time('splittext')    
     const dataArr = lineText.split(",");
+// console.timeEnd('splittext')    
+
+// console.time('assign')    
 
     dataObj.region = dataArr[REGION_INDEX];
     dataObj.country = dataArr[COUNTRY_INDEX];
@@ -43,67 +48,84 @@ exports.getDataFromLine = function(lineText) {
     dataObj.totalCost = Number(dataArr[TOTAL_COST_INDEX]);
     dataObj.totalProfit = Number(dataArr[TOTAL_PROFIT_INDEX]);
     dataObj.shipDays = exports.getDaysDiff(dataObj.orderDate, dataObj.shipDate);
+// console.timeEnd('assign')    
+
+
+
+// console.timeEnd('getDataFromLine')    
 
     return dataObj;
 };
+
+
+
+const addTotalRevenueCostProfitToObject = function(  totalRevenue,
+    totalCost,
+    totalProfit , obj )
+    {
+        const totalRevenueFieldName = 'totalRevenue';
+const totalCostFieldName = 'totalCost';
+const totalProfitFieldName = 'totalProfit';
+        if ( totalRevenueFieldName in obj ) {
+            obj[  totalRevenueFieldName ] += totalRevenue ;
+        }
+        else {
+            obj[ totalRevenueFieldName ] = totalRevenue ;
+        }
+
+        if ( totalCostFieldName in obj ) {
+            obj[  totalCostFieldName ] += totalCost ;
+        }
+        else {
+            obj[ totalCostFieldName ] = totalCost ;
+        }
+
+        if ( totalProfitFieldName in obj ) {
+            obj[  totalProfitFieldName ] += totalProfit ;
+        }
+        else {
+            obj[ totalProfitFieldName ] = totalProfit ;
+        }
+    }
 
 exports.addOrderRecordToByRegionDataset = function(
     region,
     country,
     itemType,
-    orderId,
+    totalRevenue,
+    totalCost,
+    totalProfit,
     dataObj
 ) {
-    if (region in dataObj.orderByRegion) {
-        dataObj.orderByRegion[region].push(orderId);
-    } else {
-        dataObj.orderByRegion[region] = [];
-        dataObj.orderByRegion[region] .push( orderId );
+    if( !(region in dataObj.totalRegion) ) {
+        dataObj.totalRegion[ region ] = {};
     }
+    addTotalRevenueCostProfitToObject( totalRevenue,
+        totalCost,
+        totalProfit, dataObj.totalRegion[ region ] );
 
-    // check if region exist
-    if (region in dataObj.orderByRegionCountry) {
-        // check if country exist
-        if (country in dataObj.orderByRegionCountry[region]) {
-            dataObj.orderByRegionCountry[region][country].push(orderId);
-        } else {
-            dataObj.orderByRegionCountry[region][country] = [orderId];
+        if( !(country in dataObj.totalCountry) ) {
+            dataObj.totalCountry[ country ] = {};
         }
-    } else {
-        dataObj.orderByRegionCountry[region] = {};
-        dataObj.orderByRegionCountry[region][country] = [orderId];
-    }
+        addTotalRevenueCostProfitToObject( totalRevenue,
+            totalCost,
+            totalProfit, dataObj.totalCountry[ country ] );
 
-    // check if region exist
-    if (region in dataObj.orderByRegionCountryItemType) {
-        // check if country exist
-        if (country in dataObj.orderByRegionCountryItemType[region]) {
-            // check if item exist
-            if (
-                itemType in
-                dataObj.orderByRegionCountryItemType[region][country]
-            ) {
-                dataObj.orderByRegionCountryItemType[region][country][
-                    itemType
-                ].push(orderId);
-            } else {
-                dataObj.orderByRegionCountryItemType[region][country][
-                    itemType
-                ] = [orderId];
+            if( country in dataObj.totalCountryItemType ) {
+                if( !(itemType in dataObj.totalCountryItemType[ country ] )) {
+                    dataObj.totalCountryItemType[ country ][ itemType ] = {};
+                }
             }
-        } else {
-            dataObj.orderByRegionCountryItemType[region][country] = {};
-            dataObj.orderByRegionCountryItemType[region][country][itemType] = [
-                orderId
-            ];
-        }
-    } else {
-        dataObj.orderByRegionCountryItemType[region] = {};
-        dataObj.orderByRegionCountryItemType[region][country] = {};
-        dataObj.orderByRegionCountryItemType[region][country][itemType] = [
-            orderId
-        ];
-    }
+            else {
+                dataObj.totalCountryItemType[ country ] = {};
+                dataObj.totalCountryItemType[ country ][ itemType ] = {};
+            }
+            addTotalRevenueCostProfitToObject( totalRevenue,
+                totalCost,
+                totalProfit, dataObj.totalCountryItemType[ country ][ itemType ]  );
+    /////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
+
 }// end addOrderRecordToByRegionDataset
 
 exports.addOrderRecordToByItemTypeDataset = function( itemType , orderId, dataObj ) {
@@ -143,6 +165,101 @@ exports.addOrderRecordToByPriorityMonthDataset = function( year , month, priorit
 
 }
 
+const incrementShipInfoToObject = function(shipDays, obj) {
+    if( 'shipDays' in obj ){
+        obj['shipDays'] += shipDays ;
+    }
+    else{
+        obj['shipDays'] = shipDays;
+    }
+
+    if( 'numberOfOrders' in obj ){
+        obj['numberOfOrders'] += 1 ;
+    }
+    else{
+        obj['numberOfOrders'] = 1;
+    }
+}
+
+exports.addOrderRecordToByMonthRegionDataset = function( year , month, region, country, shipDays,  dataObj ) {
+    //////  add data to shipInfoYearMonth
+    /////
+    /////
+    //check for year
+    if( year in dataObj.shipInfoYearMonth ) {
+        //check for month
+        if( !(month in dataObj.shipInfoYearMonth[ year ] )) {
+            dataObj.shipInfoYearMonth[ year ][ month ] = {};
+        }
+    }
+    else{
+        dataObj.shipInfoYearMonth[ year ] = {};
+        dataObj.shipInfoYearMonth[ year ][ month ] = {};
+    }
+    incrementShipInfoToObject(shipDays, dataObj.shipInfoYearMonth[ year ][ month ]);
+
+    //////  add data to shipInfoYearMonthRegion
+    /////
+    /////
+    //check for year
+    if( year in dataObj.shipInfoYearMonthRegion ) {
+        //check for month
+        if( month in dataObj.shipInfoYearMonthRegion[ year ] ) {
+            // check for region
+            if( !( region in dataObj.shipInfoYearMonthRegion[ year ][ month ]) ) {
+                dataObj.shipInfoYearMonthRegion[ year ][ month ][ region ] = {};
+            }
+
+        }
+        else {
+            dataObj.shipInfoYearMonthRegion[ year ][ month ] = {};
+            dataObj.shipInfoYearMonthRegion[ year ][ month ][ region ] = {};
+        }
+    }
+    else{
+        dataObj.shipInfoYearMonthRegion[ year ] = {};
+        dataObj.shipInfoYearMonthRegion[ year ][ month ] = {};
+        dataObj.shipInfoYearMonthRegion[ year ][ month ][ region ] = {};
+    }
+    // try {
+    incrementShipInfoToObject(shipDays, dataObj.shipInfoYearMonthRegion[ year ][ month ][ region ]);
+        
+    // } catch (err) {
+    //     console.log('------------------------------------------------error')
+    //     console.log(year , month, region, country)
+    //     console.log(dataObj.shipInfoYearMonthRegion[ year ])
+    //     console.log('------------------------------------------------error')
+
+    // }
+
+
+    //////  add data to shipInfoYearMonthCountry
+    /////
+    /////
+    //check for year
+    if( year in dataObj.shipInfoYearMonthCountry ) {
+        //check for month
+        if( month in dataObj.shipInfoYearMonthCountry[ year ] ) {
+            // check for country
+            if(  !(country in dataObj.shipInfoYearMonthCountry[ year ][ month ]) ) {
+                dataObj.shipInfoYearMonthCountry[ year ][ month ][ country ] = {};
+            }
+
+        }
+        else {
+            dataObj.shipInfoYearMonthCountry[ year ][ month ] = {};
+            dataObj.shipInfoYearMonthCountry[ year ][ month ][ country ] = {};
+        }
+    }
+    else{
+        dataObj.shipInfoYearMonthCountry[ year ] = {};
+        dataObj.shipInfoYearMonthCountry[ year ][ month ] = {};
+        dataObj.shipInfoYearMonthCountry[ year ][ month ][ country ] = {};
+    }
+    incrementShipInfoToObject(shipDays, dataObj.shipInfoYearMonthCountry[ year ][ month ][ country ]);
+
+}
+
 exports.getYearAndMonth = function ( dateStr ) {
     let resultObj = {};
 
@@ -167,7 +284,7 @@ exports.getCountryListForRegion = function( region, dataObj) {
 }
 
 exports.getItemTypeListForCountry = function( region, country, dataObj) {
-    const mapping = dataObj.orderByRegionCountryItemType[ region ][ country ];
+    const mapping = dataObj.totalCountryItemType[ country ];
 
     return Object.keys( mapping );
 }
@@ -175,26 +292,38 @@ exports.getItemTypeListForCountry = function( region, country, dataObj) {
 exports.getTotalRevenueCostProfitForOrderList = function( list, dataObj) {
     const orderData = dataObj.allOrderDetail;
 
-    let totolRevenue = 0;
-    let totolCost = 0;
-    let totolProfit = 0;
+    let totalRevenue = 0;
+    let totalCost = 0;
+    let totalProfit = 0;
 
     for (let index = 0; index < list.length; index++) {
         const orderId = list[index];
 
         const thisOrderData = orderData[ orderId ];
 
-        totolRevenue += thisOrderData.totalRevenue ;
-        totolCost += thisOrderData.totalCost ;
-        totolProfit += thisOrderData.totalProfit ;        
+        totalRevenue += thisOrderData.totalRevenue ;
+        totalCost += thisOrderData.totalCost ;
+        totalProfit += thisOrderData.totalProfit ;        
     }
 
     const resultObj = {
-        totolRevenue: Math.round( totolRevenue * 100 ) / 100,
-        totolCost: Math.round( totolCost * 100 ) / 100,
-        totolProfit: Math.round( totolProfit * 100 ) / 100,
+        totalRevenue: Math.round( totalRevenue * 100 ) / 100,
+        totalCost: Math.round( totalCost * 100 ) / 100,
+        totalProfit: Math.round( totalProfit * 100 ) / 100,
     }
 
     return resultObj ;
 
+}
+
+exports.getAvgShipDays = function( totalShipDays, orderCount) {
+    return Math.round(  totalShipDays / orderCount );
+}
+
+exports.getTotalRevenueCostProfitForObj = function( obj) {
+    obj.totalRevenue = Math.round( obj.totalRevenue * 100 ) /100 ;
+    obj.totalProfit = Math.round( obj.totalProfit * 100 ) /100 ;
+    obj.totalCost = Math.round( obj.totalCost * 100 ) /100 ;
+
+    return obj;
 }
