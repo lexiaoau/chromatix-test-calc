@@ -4,17 +4,24 @@ const task1TimeText = "Task 1 take: ";
 const task2TimeText = "Task 2 take: ";
 const task3TimeText = "Task 3 take: ";
 
+//// profilling code, can be deleted
 const t1_loopregion = 't1_loopregion';
 const t1_loopitem = 't1_loopitem';
 
+//// loop stored data set, and construct requested json data format from stored data
 exports.getTotalRevenueCostProfit = function (dataObj) {
-    // console.time(task1TimeText)
+
+    //// profilling code, can be deleted
+    console.time(task1TimeText)
+
     let resultObj = {};
 
     resultObj["Regions"] = {};
     const allRegionList = Object.keys(dataObj.regionCountryMapping);
 
+    //// profilling code, can be deleted
     // console.time(t1_loopregion)
+
     for (let index = 0; index < allRegionList.length; index++) {
         const region = allRegionList[index];
         resultObj["Regions"][region] = {};
@@ -53,16 +60,17 @@ exports.getTotalRevenueCostProfit = function (dataObj) {
             }
         }
     }
+
+    //// profilling code, can be deleted
     // console.timeEnd(t1_loopregion)
 
 
     resultObj['ItemTypes'] = {};
-    const itemTypeList = Object.keys(dataObj.orderByItemType);
-    console.time(t1_loopitem)
+    const itemTypeList = Object.keys(dataObj.totalItemType);
+    // console.time(t1_loopitem)
     for (let index = 0; index < itemTypeList.length; index++) {
         const itemName = itemTypeList[index];
-        const perItemTypeList = dataObj.orderByItemType[itemName];
-        funcReturnObject = utils.getTotalRevenueCostProfitForOrderList(perItemTypeList, dataObj);
+        funcReturnObject = utils.getTotalRevenueCostProfitForObj(dataObj.totalItemType[itemName]);
         resultObj['ItemTypes'][itemName] = {
             'Revenue': funcReturnObject.totalRevenue,
             'Cost': funcReturnObject.totalCost,
@@ -70,13 +78,16 @@ exports.getTotalRevenueCostProfit = function (dataObj) {
         };
     }
 
-    console.timeEnd(t1_loopitem)
-    // console.timeEnd(task1TimeText)
+    // console.timeEnd(t1_loopitem)
+    console.timeEnd(task1TimeText)
     return resultObj;
 
 }
 
+//// loop stored data set, and construct requested json data format from stored data
 exports.getPriority = function (dataObj) {
+
+    //// profilling code, can be deleted
     console.time(task2TimeText)
 
     const data = dataObj.priorityByMonth;
@@ -96,16 +107,21 @@ exports.getPriority = function (dataObj) {
             const allPriority = Object.keys(data[year][month]);
             for (let index = 0; index < allPriority.length; index++) {
                 const pri = allPriority[index];
-                resultObj[year][month][pri] = data[year][month][pri].length;
+                resultObj[year][month][pri] = data[year][month][pri];
             }
         }
     }
+
+    //// profilling code, can be deleted
     console.timeEnd(task2TimeText)
 
     return resultObj;
 }
 
+//// loop stored data set, and construct requested json data format from stored data
 exports.getTask3 = function (dataObj) {
+
+    //// profilling code, can be deleted
     console.time(task3TimeText)
 
     let resultObj = {};
@@ -159,6 +175,8 @@ exports.getTask3 = function (dataObj) {
             resultObj[year][month][textNumberOfOrders] = shipDataObj.numberOfOrders;
         }
     }
+
+    //// profilling code, can be deleted
     console.timeEnd(task3TimeText)
 
     return resultObj;

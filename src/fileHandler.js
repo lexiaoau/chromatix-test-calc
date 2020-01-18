@@ -6,9 +6,12 @@ var stream = require('stream');
 
 var dataObj = {};
 
+//// profilling code, can be deleted
 var startTime, endTime = null;
 
 exports.getDataFromFile = function (filePath) {
+
+    //// profilling code, can be deleted
     startTime = new Date();
 
     let instream = fs.createReadStream(filePath);
@@ -23,18 +26,12 @@ exports.getDataFromFile = function (filePath) {
         totalRegion : {},
         totalCountry : {},
         totalCountryItemType : {},
+        totalItemType: {},
         shipInfoYearMonth: {},
         shipInfoYearMonthRegion: {},
         shipInfoYearMonthCountry: {},
         countryItemTypeMapping: {},
-        ///////////////////////////////////////////
-        // orderByRegion: {},
-        // orderByRegionCountry: {},
-        // orderByRegionCountryItemType: {},
-        orderByItemType: {},
         priorityByMonth: {},
-        // orderByMonthRegionCountry: {},
-        allOrderDetail: {},
         regionCountryMapping: {}
     }
 
@@ -46,12 +43,7 @@ exports.getDataFromFile = function (filePath) {
         if (lineCount > 1) {
             const lineDataObj = utils.getDataFromLine(line);
 
-            const { year, month } = utils.getYearAndMonth(lineDataObj.orderDate);
-
-            // add the complete order data for query
-// console.time('allOrderDetail[lineDataObj.orderId] ')            
-            dataObj.allOrderDetail[lineDataObj.orderId] = lineDataObj;
-// console.timeEnd('allOrderDetail[lineDataObj.orderId] ')            
+            const { year, month } = utils.getYearAndMonth(lineDataObj.orderDate);       
 
             // add regin and country mapping relationship
             if (lineDataObj.region in dataObj.regionCountryMapping) {
@@ -78,33 +70,26 @@ exports.getDataFromFile = function (filePath) {
             // add order mapping for later processing
             utils.addOrderRecordToByRegionDataset(lineDataObj.region, lineDataObj.country, lineDataObj.itemType, 
                                                                                                   lineDataObj.totalRevenue, lineDataObj.totalCost, lineDataObj.totalProfit, dataObj);
-            utils.addOrderRecordToByItemTypeDataset(lineDataObj.itemType, lineDataObj.orderId, dataObj);
-            utils.addOrderRecordToByPriorityMonthDataset(year, month, lineDataObj.priority, lineDataObj.orderId, dataObj);
+            utils.addOrderRecordToByItemTypeDataset(lineDataObj.itemType, lineDataObj.totalRevenue, lineDataObj.totalCost, lineDataObj.totalProfit, dataObj);
+            utils.addOrderRecordToByPriorityMonthDataset(year, month, lineDataObj.priority,  dataObj);
             utils.addOrderRecordToByMonthRegionDataset(year, month, lineDataObj.region, lineDataObj.country, lineDataObj.shipDays, dataObj);
 
         }
     });
 
     rl.on('close', function () {
+
+        //// profilling code, can be deleted
         endTime = new Date();
         console.log('file read takes: ', (endTime - startTime) / 1000)
-        console.log('cloes');
-
-        // console.log(JSON.stringify(dataObj.shipInfoYearMonthRegion['2010']['10'], null, 4))
-        // console.log(JSON.stringify(dataObj.shipInfoYearMonthCountry['2010']['10'], null, 4))
-        // console.log(JSON.stringify(dataObj.shipInfoYearMonth, null, 4))
-
 
         cli.ask(dataObj);
-
-        // return dataObj;
 
     });
 
 }
 
+///// write json data to specified file
 exports.outputTaskResult = function (filePath, jsonData) {
-    // console.time('writefile')
     fs.writeFileSync(filePath, JSON.stringify(jsonData, null, 4));
-    // console.timeEnd('writefile')
 }
