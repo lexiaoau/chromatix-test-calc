@@ -32,10 +32,10 @@ npm start
 
 ```
 
-Then, the APP will read the data file and sort the data and this may take a few seconds.
-After reading finished, a CLI menu is presented and user can choose task number from the menu.
-After one task is chosen, the APP will output the task JSON result to a file and the file path will be printed. Then, it will show the menu again.
-To exit the CLI APP, choose "exit" from the menu.
+- Then, the APP will read the data file and sort the data and this may take a few seconds.
+- After reading finished, a CLI menu is presented and user can choose task number from the menu.
+- After one task is chosen, the APP will output the task JSON result to a file and the file path will be printed. Then, it will show the menu again.
+- To exit the CLI APP, choose "exit" from the menu.
 
 ## Code Explanation
 
